@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/tiantour/conf"
+	"github.com/tiantour/fetch"
 	"github.com/tiantour/imago"
-	"github.com/tiantour/requests"
 )
 
 // Weather weather
@@ -82,9 +82,8 @@ type weather struct{}
 
 // GetWeatherData 转换
 func (w *weather) Data(weatherArea, weatherType string) (weatherData map[string]interface{}, err error) {
-	requestURL, requestData, requestHeader := requests.Options()
-	requestURL = w.url(weatherArea, weatherType)
-	body, err := requests.Get(requestURL, requestData, requestHeader)
+	requestURL := w.url(weatherArea, weatherType)
+	body, err := fetch.Cmd("get", requestURL)
 	if err != nil {
 		return
 	}

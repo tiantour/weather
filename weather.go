@@ -14,8 +14,8 @@ import (
 // Weather weather
 var (
 	Weather     = &weather{}
-	appID       = conf.Options.Weather.ID
-	privateKey  = conf.Options.Weather.Key
+	appID       = conf.Data.Weather.ID
+	privateKey  = conf.Data.Weather.Key
 	weatherInfo = map[string]string{
 		"00": "晴",
 		"1":  "多云",

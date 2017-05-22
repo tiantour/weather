@@ -163,8 +163,6 @@ func NewWeather(appID, privateKey string) *Weather {
 }
 
 // URL get weather url
-// date 2017-05-22
-// author andy.jiang
 func (w Weather) URL(area, types string) string {
 	date := time.Now().Format("200601021504")
 	result := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%s&type=%s&date=%s",
@@ -187,8 +185,6 @@ func (w Weather) URL(area, types string) string {
 }
 
 // Observe get weather observe
-// date 2017-05-22
-// author andy.jiang
 func (w Weather) Observe(area string) (Response, error) {
 	result := Response{}
 	body, err := fetch.Cmd(fetch.Request{
@@ -203,8 +199,6 @@ func (w Weather) Observe(area string) (Response, error) {
 }
 
 // Forecast get weather forecast
-// date 2017-05-22
-// author andy.jiang
 func (w Weather) Forecast(area string) (Response, error) {
 	result := Response{}
 	body, err := fetch.Cmd(fetch.Request{
@@ -223,8 +217,6 @@ func (w Weather) Forecast(area string) (Response, error) {
 }
 
 // Alarm get weather index
-// date 2017-05-22
-// author andy.jiang
 func (w Weather) Alarm(area string) (Response, error) {
 	result := Response{}
 	body, err := fetch.Cmd(fetch.Request{
@@ -239,8 +231,6 @@ func (w Weather) Alarm(area string) (Response, error) {
 }
 
 // Index get weather index
-// date 2017-05-22
-// author andy.jiang
 func (w Weather) Index(area string) (Response, error) {
 	result := Response{}
 	body, err := fetch.Cmd(fetch.Request{
@@ -255,8 +245,6 @@ func (w Weather) Index(area string) (Response, error) {
 }
 
 // Transform weather code transform
-// date 2017-05-22
-// author andy.jiang
 func (w Weather) Transform(args Forecast) Forecast {
 	args.Fa = weather[args.Fa]
 	args.Fb = weather[args.Fb]

@@ -258,7 +258,6 @@ func (w Weather) Index(area string) (Response, error) {
 // date 2017-05-22
 // author andy.jiang
 func (w Weather) Transform(args Forecast) Forecast {
-	fmt.Println(args)
 	args.Fa = weather[args.Fa]
 	args.Fb = weather[args.Fb]
 	args.Fe = direction[args.Fe]

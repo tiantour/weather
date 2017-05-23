@@ -11,7 +11,11 @@ import (
 )
 
 var (
-	weather = map[string]string{
+	// AppID app id
+	AppID string
+	// PrivateKey private key
+	PrivateKey string
+	weather    = map[string]string{
 		"00": "晴",
 		"1":  "多云",
 		"2":  "阴",
@@ -79,14 +83,12 @@ var (
 
 type (
 	// Weather weather
-	Weather struct{}
-	// Response response
-	Response struct {
-		Observe Observe `json:"l,omitempty"` // 实况
-		City    City    `json:"c,omitempty"` // 城市
-		Data    Data    `json:"f,omitempty"` // 常规
-		Alarm   Alarm   `json:"w,omitempty"` // 预警
-		Index   []Index `json:"i,omitempty"` // 指数
+	Weather struct {
+		L Observe `json:"l,omitempty"` // 实况
+		C City    `json:"c,omitempty"` // 城市
+		F Data    `json:"f,omitempty"` // 常规
+		A Alarm   `json:"w,omitempty"` // 预警
+		I []Index `json:"i,omitempty"` // 指数
 	}
 	// Observe observe
 	Observe struct {
@@ -183,55 +185,55 @@ func (w Weather) URL(area, types string) string {
 	)
 }
 
-// // Observe get weather observe
-// func (w Weather) Observe(area string) (Response, error) {
-// 	result := Response{}
-// 	body, err := fetch.Cmd(fetch.Request{
-// 		Method: "GET",
-// 		URL:    w.URL(area, "observe_v"),
-// 	})
-// 	if err != nil {
-// 		return result, err
-// 	}
-// 	err = json.Unmarshal(body, &result)
-// 	return result, err
-// }
+// Observe get weather observe
+func (w Weather) Observe(area string) (Weather, error) {
+	result := Weather{}
+	body, err := fetch.Cmd(fetch.Request{
+		Method: "GET",
+		URL:    w.URL(area, "observe_v"),
+	})
+	if err != nil {
+		return result, err
+	}
+	err = json.Unmarshal(body, &result)
+	return result, err
+}
 
-// // Forecast get weather forecast
-// func (w Weather) Forecast(area string) (Response, error) {
-// 	result := Response{}
-// 	body, err := fetch.Cmd(fetch.Request{
-// 		Method: "GET",
-// 		URL:    w.URL(area, "forecast_v"),
-// 	})
-// 	if err != nil {
-// 		return result, err
-// 	}
-// 	err = json.Unmarshal(body, &result)
-// 	for k, v := range result.Data.F1 {
-// 		v = w.Transform(v)
-// 		result.Data.F1[k] = v
-// 	}
-// 	return result, err
-// }
+// Forecast get weather forecast
+func (w Weather) Forecast(area string) (Weather, error) {
+	result := Weather{}
+	body, err := fetch.Cmd(fetch.Request{
+		Method: "GET",
+		URL:    w.URL(area, "forecast_v"),
+	})
+	if err != nil {
+		return result, err
+	}
+	err = json.Unmarshal(body, &result)
+	for k, v := range result.F.F1 {
+		v = w.Transform(v)
+		result.F.F1[k] = v
+	}
+	return result, err
+}
 
-// // Alarm get weather index
-// func (w Weather) Alarm(area string) (Response, error) {
-// 	result := Response{}
-// 	body, err := fetch.Cmd(fetch.Request{
-// 		Method: "GET",
-// 		URL:    w.URL(area, "alarm_v"),
-// 	})
-// 	if err != nil {
-// 		return result, err
-// 	}
-// 	err = json.Unmarshal(body, &result)
-// return result, err
-// }
+// Alarm get weather index
+func (w Weather) Alarm(area string) (Weather, error) {
+	result := Weather{}
+	body, err := fetch.Cmd(fetch.Request{
+		Method: "GET",
+		URL:    w.URL(area, "alarm_v"),
+	})
+	if err != nil {
+		return result, err
+	}
+	err = json.Unmarshal(body, &result)
+	return result, err
+}
 
 // Index get weather index
-func (w Weather) Index(area string) (Response, error) {
-	result := Response{}
+func (w Weather) Index(area string) (Weather, error) {
+	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
 		URL:    w.URL(area, "index_v"),

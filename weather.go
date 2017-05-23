@@ -13,9 +13,11 @@ import (
 var (
 	// AppID app id
 	AppID string
+
 	// PrivateKey private key
 	PrivateKey string
-	weather    = map[string]string{
+
+	weather = map[string]string{
 		"00": "晴",
 		"1":  "多云",
 		"2":  "阴",
@@ -75,10 +77,6 @@ var (
 		"8": "10-11级",
 		"9": "11-12级",
 	}
-	// AppID app id
-	AppID string
-	// PrivateKey private key
-	PrivateKey string
 )
 
 type (

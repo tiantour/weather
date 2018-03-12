@@ -170,8 +170,8 @@ func (w Weather) URL(area, types string) string {
 	)
 
 	publickKey := fmt.Sprintf("%s&appid=%s", result, AppID)
-	sign := rsae.NewRsae().Base64Encode(
-		rsae.NewRsae().HmacSha1(
+	sign := rsae.NewBase64().Encode(
+		rsae.NewSHA().HmacSha1(
 			publickKey,
 			PrivateKey,
 		),

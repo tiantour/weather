@@ -161,13 +161,11 @@ func NewWeather() *Weather {
 }
 
 // URL get weather url
-func (w *Weather) URL(placeID int, types string) string {
+func (w *Weather) URL(placeID int, action string) string {
 	date := time.Now().Format("200601021504")
-	result := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%d&type=%s&date=%s", placeID, types, date)
-	publickKey := fmt.Sprintf("%s&appid=%s", result, AppID)
-	body := rsae.NewSHA().HmacSha1(publickKey, PrivateKey)
-	sign := rsae.NewBase64().Encode(body)
-	return fmt.Sprintf("%s&appid=%s&key=%s", result, AppID[:6], url.QueryEscape(sign))
+	result := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%d&type=%s_v&date=%s", placeID, action, date)
+	sign := url.QueryEscape(w.sign(result))
+	return fmt.Sprintf("%s&appid=%s&key=%s", result, AppID[:6], sign)
 }
 
 // Observe get weather observe
@@ -175,7 +173,7 @@ func (w *Weather) Observe(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(placeID, "observe_v"),
+		URL:    w.URL(placeID, "observe"),
 	})
 	if err != nil {
 		return nil, err
@@ -189,14 +187,14 @@ func (w *Weather) Forecast(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(placeID, "forecast_v"),
+		URL:    w.URL(placeID, "forecast"),
 	})
 	if err != nil {
 		return nil, err
 	}
 	err = json.Unmarshal(body, &result)
 	for k, v := range result.F.F1 {
-		v = w.Transform(v)
+		v = w.transform(v)
 		result.F.F1[k] = v
 	}
 	return &result, err
@@ -207,7 +205,7 @@ func (w *Weather) Alarm(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(placeID, "alarm_v"),
+		URL:    w.URL(placeID, "alarm"),
 	})
 	if err != nil {
 		return nil, err
@@ -221,7 +219,7 @@ func (w *Weather) Index(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(placeID, "index_v"),
+		URL:    w.URL(placeID, "index"),
 	})
 	if err != nil {
 		return nil, err
@@ -230,8 +228,8 @@ func (w *Weather) Index(placeID int) (*Weather, error) {
 	return &result, err
 }
 
-// Transform weather code transform
-func (w *Weather) Transform(args *Forecast) *Forecast {
+// transform transform
+func (w *Weather) transform(args *Forecast) *Forecast {
 	args.Fa = weather[args.Fa]
 	args.Fb = weather[args.Fb]
 	args.Fe = direction[args.Fe]
@@ -239,4 +237,11 @@ func (w *Weather) Transform(args *Forecast) *Forecast {
 	args.Fg = rate[args.Fg]
 	args.Fh = rate[args.Fh]
 	return args
+}
+
+// sign sign
+func (w *Weather) sign(url string) string {
+	publickKey := fmt.Sprintf("%s&appid=%s", url, AppID)
+	body := rsae.NewSHA().HmacSha1(publickKey, PrivateKey)
+	return rsae.NewBase64().Encode(body)
 }

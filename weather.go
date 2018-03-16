@@ -82,11 +82,11 @@ var (
 type (
 	// Weather weather
 	Weather struct {
-		L Observe `json:"l,omitempty"` // 实况
-		C City    `json:"c,omitempty"` // 城市
-		F Data    `json:"f,omitempty"` // 常规
-		A Alarm   `json:"w,omitempty"` // 预警
-		I []Index `json:"i,omitempty"` // 指数
+		L *Observe `json:"l,omitempty"` // 实况
+		C *City    `json:"c,omitempty"` // 城市
+		F *Data    `json:"f,omitempty"` // 常规
+		A *Alarm   `json:"w,omitempty"` // 预警
+		I []*Index `json:"i,omitempty"` // 指数
 	}
 	// Observe observe
 	Observe struct {
@@ -117,8 +117,8 @@ type (
 	}
 	// Data data
 	Data struct {
-		F0 string     `json:"f0,omitempty"` // 时间
-		F1 []Forecast `json:"f1,omitempty"` // 天气
+		F0 string      `json:"f0,omitempty"` // 时间
+		F1 []*Forecast `json:"f1,omitempty"` // 天气
 	}
 	// Forecast forecast
 	Forecast struct {
@@ -161,90 +161,77 @@ func NewWeather() *Weather {
 }
 
 // URL get weather url
-func (w Weather) URL(area, types string) string {
+func (w *Weather) URL(placeID int, types string) string {
 	date := time.Now().Format("200601021504")
-	result := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%s&type=%s&date=%s",
-		area,
-		types,
-		date,
-	)
-
+	result := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%d&type=%s&date=%s", placeID, types, date)
 	publickKey := fmt.Sprintf("%s&appid=%s", result, AppID)
-	sign := rsae.NewBase64().Encode(
-		rsae.NewSHA().HmacSha1(
-			publickKey,
-			PrivateKey,
-		),
-	)
-	return fmt.Sprintf("%s&appid=%s&key=%s",
-		result,
-		AppID[:6],
-		url.QueryEscape(sign),
-	)
+	body := rsae.NewSHA().HmacSha1(publickKey, PrivateKey)
+	sign := rsae.NewBase64().Encode(body)
+	return fmt.Sprintf("%s&appid=%s&key=%s", result, AppID[:6], url.QueryEscape(sign))
 }
 
 // Observe get weather observe
-func (w Weather) Observe(area string) (Weather, error) {
+func (w *Weather) Observe(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(area, "observe_v"),
+		URL:    w.URL(placeID, "observe_v"),
 	})
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	err = json.Unmarshal(body, &result)
-	return result, err
+	return &result, err
 }
 
 // Forecast get weather forecast
-func (w Weather) Forecast(area string) (Weather, error) {
+func (w *Weather) Forecast(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(area, "forecast_v"),
+		URL:    w.URL(placeID, "forecast_v"),
 	})
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	err = json.Unmarshal(body, &result)
 	for k, v := range result.F.F1 {
 		v = w.Transform(v)
 		result.F.F1[k] = v
 	}
-	return result, err
+	return &result, err
 }
 
 // Alarm get weather index
-func (w Weather) Alarm(area string) (Weather, error) {
+func (w *Weather) Alarm(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(area, "alarm_v"),
+		URL:    w.URL(placeID, "alarm_v"),
 	})
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	err = json.Unmarshal(body, &result)
-	return result, err
+	return &result, err
 }
 
 // Index get weather index
-func (w Weather) Index(area string) (Weather, error) {
+func (w *Weather) Index(placeID int) (*Weather, error) {
 	result := Weather{}
 	body, err := fetch.Cmd(fetch.Request{
 		Method: "GET",
-		URL:    w.URL(area, "index_v"),
+		URL:    w.URL(placeID, "index_v"),
 	})
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	err = json.Unmarshal(body, &result)
-	return result, err
+	return &result, err
 }
 
 // Transform weather code transform
-func (w Weather) Transform(args Forecast) Forecast {
+func (w *Weather) Transform(args *Forecast) *Forecast {
 	args.Fa = weather[args.Fa]
 	args.Fb = weather[args.Fb]
 	args.Fe = direction[args.Fe]

@@ -80,21 +80,18 @@ var (
 )
 
 type (
-	// Weather weather
-	Weather struct {
-		L *Observe `json:"l,omitempty"` // 实况
-		C *City    `json:"c,omitempty"` // 城市
-		F *Data    `json:"f,omitempty"` // 常规
-		A *Alarm   `json:"w,omitempty"` // 预警
-		I []*Index `json:"i,omitempty"` // 指数
-	}
-	// Observe observe
-	Observe struct {
-		L1 string `json:"l1,omitempty"` // 温度
-		L2 string `json:"l2,omitempty"` // 湿度
-		L3 string `json:"l3,omitempty"` // 风力
-		L4 string `json:"l4,omitempty"` // 风向
-		L7 string `json:"l7,omitempty"` // 时间
+	// Alarm alarm
+	Alarm struct {
+		W1  string `json:"w1,omitempty"`  // 省
+		W2  string `json:"w2,omitempty"`  // 市
+		W3  string `json:"w3,omitempty"`  // 县
+		W4  string `json:"w4,omitempty"`  // 类别编号
+		W5  string `json:"w5,omitempty"`  // 类别名称
+		W6  string `json:"w6,omitempty"`  // 级别编号
+		W7  string `json:"w7,omitempty"`  // 级别名称
+		W8  string `json:"w8,omitempty"`  // 时间
+		W9  string `json:"w9,omitempty"`  // 内容
+		W10 string `json:"w10,omitempty"` // ID
 	}
 	// City city
 	City struct {
@@ -132,19 +129,6 @@ type (
 		Fh string `json:"fh,omitempty"` // 晚上风力
 		Fi string `json:"fi,omitempty"` // 日出日落
 	}
-	// Alarm alarm
-	Alarm struct {
-		W1  string `json:"w1,omitempty"`  // 省
-		W2  string `json:"w2,omitempty"`  // 市
-		W3  string `json:"w3,omitempty"`  // 县
-		W4  string `json:"w4,omitempty"`  // 类别编号
-		W5  string `json:"w5,omitempty"`  // 类别名称
-		W6  string `json:"w6,omitempty"`  // 级别编号
-		W7  string `json:"w7,omitempty"`  // 级别名称
-		W8  string `json:"w8,omitempty"`  // 时间
-		W9  string `json:"w9,omitempty"`  // 内容
-		W10 string `json:"w10,omitempty"` // ID
-	}
 	// Index index
 	Index struct {
 		I1 string `json:"i1,omitempty"` // 简称
@@ -153,6 +137,22 @@ type (
 		I4 string `json:"i4,omitempty"` // 级别
 		I5 string `json:"i5,omitempty"` // 内容
 	}
+	// Observe observe
+	Observe struct {
+		L1 string `json:"l1,omitempty"` // 温度
+		L2 string `json:"l2,omitempty"` // 湿度
+		L3 string `json:"l3,omitempty"` // 风力
+		L4 string `json:"l4,omitempty"` // 风向
+		L7 string `json:"l7,omitempty"` // 时间
+	}
+	// Weather weather
+	Weather struct {
+		A *Alarm   `json:"w,omitempty"` // 预警
+		C *City    `json:"c,omitempty"` // 城市
+		F *Data    `json:"f,omitempty"` // 常规
+		L *Observe `json:"l,omitempty"` // 实况
+		I []*Index `json:"i,omitempty"` // 指数
+	}
 )
 
 // NewWeather new weather
@@ -160,38 +160,24 @@ func NewWeather() *Weather {
 	return &Weather{}
 }
 
-// URL get weather url
-func (w *Weather) URL(placeID int, action string) string {
-	date := time.Now().Format("200601021504")
-	result := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%d&type=%s_v&date=%s", placeID, action, date)
-	sign := url.QueryEscape(w.sign(result))
-	return fmt.Sprintf("%s&appid=%s&key=%s", result, AppID[:6], sign)
-}
-
-// Observe get weather observe
-func (w *Weather) Observe(placeID int) (*Weather, error) {
-	result := Weather{}
-	body, err := fetch.Cmd(fetch.Request{
-		Method: "GET",
-		URL:    w.URL(placeID, "observe"),
-	})
+// Alarm get weather index
+func (w *Weather) Alarm(placeID int) (*Weather, error) {
+	body, err := w.Body(placeID, "alarm")
 	if err != nil {
 		return nil, err
 	}
+	result := Weather{}
 	err = json.Unmarshal(body, &result)
 	return &result, err
 }
 
 // Forecast get weather forecast
 func (w *Weather) Forecast(placeID int) (*Weather, error) {
-	result := Weather{}
-	body, err := fetch.Cmd(fetch.Request{
-		Method: "GET",
-		URL:    w.URL(placeID, "forecast"),
-	})
+	body, err := w.Body(placeID, "forecast")
 	if err != nil {
 		return nil, err
 	}
+	result := Weather{}
 	err = json.Unmarshal(body, &result)
 	for k, v := range result.F.F1 {
 		v = w.transform(v)
@@ -200,30 +186,24 @@ func (w *Weather) Forecast(placeID int) (*Weather, error) {
 	return &result, err
 }
 
-// Alarm get weather index
-func (w *Weather) Alarm(placeID int) (*Weather, error) {
-	result := Weather{}
-	body, err := fetch.Cmd(fetch.Request{
-		Method: "GET",
-		URL:    w.URL(placeID, "alarm"),
-	})
+// Index get weather index
+func (w *Weather) Index(placeID int) (*Weather, error) {
+	body, err := w.Body(placeID, "index")
 	if err != nil {
 		return nil, err
 	}
+	result := Weather{}
 	err = json.Unmarshal(body, &result)
 	return &result, err
 }
 
-// Index get weather index
-func (w *Weather) Index(placeID int) (*Weather, error) {
-	result := Weather{}
-	body, err := fetch.Cmd(fetch.Request{
-		Method: "GET",
-		URL:    w.URL(placeID, "index"),
-	})
+// Observe get weather observe
+func (w *Weather) Observe(placeID int) (*Weather, error) {
+	body, err := w.Body(placeID, "observe")
 	if err != nil {
 		return nil, err
 	}
+	result := Weather{}
 	err = json.Unmarshal(body, &result)
 	return &result, err
 }
@@ -239,9 +219,23 @@ func (w *Weather) transform(args *Forecast) *Forecast {
 	return args
 }
 
-// sign sign
-func (w *Weather) sign(url string) string {
-	publickKey := fmt.Sprintf("%s&appid=%s", url, AppID)
+// Body get weather body
+func (w *Weather) Body(placeID int, action string) ([]byte, error) {
+	date := time.Now().Format("200601021504")
+	path := fmt.Sprintf("http://open.weather.com.cn/data/?areaid=%d&type=%s_v&date=%s", placeID, action, date)
+	return fetch.Cmd(fetch.Request{
+		Method: "GET",
+		URL: fmt.Sprintf("%s&appid=%s&key=%s",
+			path, AppID[:6],
+			w.sign(path),
+		),
+	})
+}
+
+// sign get weathr path sign
+func (w *Weather) sign(path string) string {
+	publickKey := fmt.Sprintf("%s&appid=%s", path, AppID)
 	body := rsae.NewSHA().HmacSha1(publickKey, PrivateKey)
-	return rsae.NewBase64().Encode(body)
+	sign := rsae.NewBase64().Encode(body)
+	return url.QueryEscape(sign)
 }

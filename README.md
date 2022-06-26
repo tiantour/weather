@@ -1,50 +1,32 @@
 # weather
 
-get weather.com.cn api with go
+weather skd for tianqiapi.com v91
 
-### Index
-
-```
-package main
-
-import (
-	"fmt"
-
-	"github.com/tiantour/weather"
-)
-
-func init() {
-	weather.AppID = "your appid"
-	weather.PrivateKey = "your private key"
-}
-
-func main() {
-	area := "101251201"
-	index, err := weather.NewWeather().Index(area)
-	fmt.Print(index, err)
-}
-```
-
-
-### Forecast
+# how to use
 
 ```
 package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/tiantour/weather"
 )
 
-func init() {
-	weather.AppID = "your appid"
-	weather.PrivateKey = "your private key"
+func main() {
+	weather.AppID = "you appid"
+	weather.AppSecret = "you appsecret"
+	weather.Version = "v91"
+
+	result, err := weather.NewWeather().FetchWithTTL(cityID, 1, 7200*time.Second)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for k, v := range result.Data {
+		fmt.Println(k, v)
+	}
 }
 
-func main() {
-	area := "101251201"
-	forecast, err := weather.NewWeather().Forecast(area)
-	fmt.Print(forecast, err)
-}
 ```

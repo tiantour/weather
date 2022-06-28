@@ -102,7 +102,6 @@ type (
 		Rain     string `json:"rain,omitempty"`      // 下雨
 		Win      string `json:"win,omitempty"`       // 风力
 		WinMeter string `json:"win_meter,omitempty"` // 风速
-
 	}
 )
 
@@ -111,7 +110,7 @@ func NewWeather() *Weather {
 	return &Weather{}
 }
 
-func (w *Weather) FetchWithTTL(cityID int32, cost int64, ttl time.Duration) (*Weather, error) {
+func (w *Weather) FetchWithTTL(cityID string, cost int64, ttl time.Duration) (*Weather, error) {
 	cache.Wait()
 	result, ok := cache.Get(cityID)
 	if ok {
@@ -128,8 +127,8 @@ func (w *Weather) FetchWithTTL(cityID int32, cost int64, ttl time.Duration) (*We
 }
 
 // Fetch fetch weather
-func (w *Weather) Fetch(cityID int32) (*Weather, error) {
-	path := fmt.Sprintf("https://v0.yiketianqi.com/api?unescape=1&version=%s&appid=%d&appsecret=%s&ext&cityid=%d", Version, AppID, AppSecret, cityID)
+func (w *Weather) Fetch(cityID string) (*Weather, error) {
+	path := fmt.Sprintf("https://v0.yiketianqi.com/api?unescape=1&version=%s&appid=%d&appsecret=%s&ext&cityid=%s", Version, AppID, AppSecret, cityID)
 	body, err := fetch.Cmd(&fetch.Request{
 		Method: "GET",
 		URL:    path,

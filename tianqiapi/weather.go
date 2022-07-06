@@ -1,35 +1,18 @@
-package weather
+package tianqiapi
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"time"
 
-	"github.com/dgraph-io/ristretto"
 	"github.com/tiantour/fetch"
 )
 
 var (
-	cache     *ristretto.Cache
 	AppID     int32  //  AppID
 	AppSecret string // AppSecret
 	Version   string // Version
 )
-
-func init() {
-	var err error
-	cache, err = ristretto.NewCache(&ristretto.Config{
-		NumCounters:        1e7,     // number of keys to track frequency of (10M).
-		MaxCost:            1 << 30, // maximum cost of cache (1GB).
-		BufferItems:        64,      // number of keys per Get buffer.
-		IgnoreInternalCost: true,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 type (
 	// Weather weather
@@ -89,23 +72,6 @@ type (
 // NewWeather new weather
 func NewWeather() *Weather {
 	return &Weather{}
-}
-
-func (w *Weather) FetchWithTTL(cityID string, cost int64, ttl time.Duration) (*Weather, error) {
-	cache.Wait()
-
-	result, ok := cache.Get(cityID)
-	if ok {
-		return result.(*Weather), nil
-	}
-
-	body, err := w.Fetch(cityID)
-	if err != nil {
-		return nil, err
-	}
-
-	_ = cache.SetWithTTL(cityID, body, cost, ttl)
-	return body, err
 }
 
 // Fetch fetch weather

@@ -1,10 +1,3 @@
-# weather
-
-weather skd for tianqiapi.com v91
-
-# how to use
-
-```
 package main
 
 import (
@@ -25,6 +18,3 @@ func main() {
 	y, err := tianqiapi.NewWeather().Fetch("101030100")
 	fmt.Println(y, err)
 }
-
-
-```

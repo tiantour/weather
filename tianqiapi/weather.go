@@ -20,7 +20,7 @@ type (
 		ErrCode    int32   `json:"errcode,omitempty"`     // 错误代码
 		ErrMsg     string  `json:"errmsg,omitempty"`      // 错误消息
 		UpdateTime string  `json:"update_time,omitempty"` // 更新时间
-		CityID     string  `json:"citydid,omitempty"`     // 城市编号
+		CityID     string  `json:"cityid,omitempty"`      // 城市编号
 		City       string  `json:"city,omitempty"`        // 城市名称
 		CityEN     string  `json:"cityEN,omitempty"`      // 城市英文名称
 		Country    string  `json:"country,omitempty"`     // 国家名称

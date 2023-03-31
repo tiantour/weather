@@ -1,11 +1,10 @@
 package sojson
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/tiantour/fetch"
+	"github.com/duke-git/lancet/v2/netutil"
 )
 
 type (
@@ -57,17 +56,17 @@ func NewWeather() *Weather {
 
 // Fetch fetch weather
 func (w *Weather) Fetch(cityID string) (*Weather, error) {
-	path := fmt.Sprintf("http://t.weather.sojson.com/api/weather/city/%s", cityID)
-	body, err := fetch.Cmd(&fetch.Request{
+	client := netutil.NewHttpClient()
+	resp, err := client.SendRequest(&netutil.HttpRequest{
+		RawURL: fmt.Sprintf("http://t.weather.sojson.com/api/weather/city/%s", cityID),
 		Method: "GET",
-		URL:    path,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	var result Weather
-	err = json.Unmarshal(body, &result)
+	result := Weather{}
+	err = client.DecodeResponse(resp, &result)
 	if err != nil {
 		return nil, err
 	}

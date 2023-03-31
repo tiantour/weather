@@ -1,11 +1,10 @@
 package tianqiapi
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
-	"github.com/tiantour/fetch"
+	"github.com/duke-git/lancet/v2/netutil"
 )
 
 var (
@@ -76,17 +75,17 @@ func NewWeather() *Weather {
 
 // Fetch fetch weather
 func (w *Weather) Fetch(cityID string) (*Weather, error) {
-	path := fmt.Sprintf("https://v0.yiketianqi.com/api?unescape=1&version=%s&appid=%d&appsecret=%s&ext&cityid=%s", Version, AppID, AppSecret, cityID)
-	body, err := fetch.Cmd(&fetch.Request{
+	client := netutil.NewHttpClient()
+	resp, err := client.SendRequest(&netutil.HttpRequest{
+		RawURL: fmt.Sprintf("https://v0.yiketianqi.com/api?unescape=1&version=%s&appid=%d&appsecret=%s&ext&cityid=%s", Version, AppID, AppSecret, cityID),
 		Method: "GET",
-		URL:    path,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	var result Weather
-	err = json.Unmarshal(body, &result)
+	result := Weather{}
+	err = client.DecodeResponse(resp, &result)
 	if err != nil {
 		return nil, err
 	}
